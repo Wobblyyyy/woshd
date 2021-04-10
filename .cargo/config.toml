@@ -6,4 +6,4 @@ target = "x86_64-v7em.json"
 
 [unstable]
 build-std = ["core", "compiler_builtins"]
-built-std-features = ["compiler-builtins-mem"]
+build-std-features = ["compiler-builtins-mem"]
