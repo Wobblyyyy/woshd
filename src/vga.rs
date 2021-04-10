@@ -1,5 +1,7 @@
 use volatile::Volatile;
 use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 /// Horizontal size of the VGA buffer (ROWS)
 const VGA_SIZE_H: usize = 25;
@@ -258,4 +260,12 @@ pub fn print_test_string() {
     // ];
 
     write("hello noelia v2 ", Color::GreenLight, Color::GreenDark);
+}
+
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        col_pos: 0,
+        color: ColorCode::new(Color::White, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
 }

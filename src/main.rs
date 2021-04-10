@@ -9,7 +9,7 @@ mod vga;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    vga::print_test_string();
+    vga::WRITER.lock().write_string("Hello Noelia!");
 
     loop {}
 }
