@@ -1,0 +1,14 @@
+[package]
+name = "woshd"
+version = "0.1.0"
+edition = "2018"
+authors = ["Colin Robertson <wobblyyyy@gmail.com>"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[dependencies]
+bootloader = "0.9.8"
