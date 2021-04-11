@@ -4,16 +4,17 @@ version = "0.1.0"
 edition = "2018"
 authors = ["Colin Robertson <wobblyyyy@gmail.com>"]
 
-[profile.dev]
-panic = "abort"
+#[profile.dev]
+#panic = "abort"
 
-[profile.release]
-panic = "abort"
+#[profile.release]
+#panic = "abort"
 
 [dependencies]
 bootloader = "0.9.8"
 volatile = "0.2.6"
 spin = "0.5.2"
+x86_64 = "0.13.2"
 
 [dependencies.lazy_static]
 version = "1.0"

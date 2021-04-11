@@ -1,7 +1,8 @@
-use volatile::Volatile;
 use core::fmt;
+
 use lazy_static::lazy_static;
 use spin::Mutex;
+use volatile::Volatile;
 
 /// Horizontal size of the VGA buffer (ROWS)
 const VGA_SIZE_H: usize = 25;
@@ -46,6 +47,7 @@ pub struct Writer {
 /// Where color is the "base" color and modifier is the differentiating factor of the color.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(dead_code)]
+#[repr(u8)]
 pub enum Color {
     Black = 0,
     BlueDark = 1,
@@ -240,27 +242,15 @@ impl fmt::Write for Writer {
     }
 }
 
-pub fn write(string: &str, color: Color, background: Color) {
-    let mut writer = Writer {
-        col_pos: 0,
-        color: ColorCode::new(color, background),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    writer.write_string(string);
-}
-
-pub fn print_test_string() {
-    // let colors: [ColorCode; 5] = [
-    //     ColorCode::new(Color::White, Color::Black),
-    //     ColorCode::new(Color::Pink, Color::Black),
-    //     ColorCode::new(Color::BlueDark, Color::BlueLight),
-    //     ColorCode::new(Color::GreenLight, Color::GreenDark),
-    //     ColorCode::new(Color::GreenDark, Color::GreenLight)
-    // ];
-
-    write("hello noelia v2 ", Color::GreenLight, Color::GreenDark);
-}
+// pub fn write(string: &str, color: Color, background: Color) {
+//     let mut writer = Writer {
+//         col_pos: 0,
+//         color: ColorCode::new(color, background),
+//         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+//     };
+//
+//     writer.write_string(string);
+// }
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
@@ -268,4 +258,23 @@ lazy_static! {
         color: ColorCode::new(Color::White, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga::_print(format_args!($($arg)*)));
+}
+
+/// Like the `println!` macro in the standard library, but prints to the VGA text buffer.
+#[macro_export]
+macro_rules! println {
+    () => ($crate::vga::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+/// Prints the given formatted string to the VGA text buffer through the global `WRITER` instance.
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
 }
