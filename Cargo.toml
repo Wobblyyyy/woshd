@@ -4,18 +4,24 @@ version = "0.1.0"
 edition = "2018"
 authors = ["Colin Robertson <wobblyyyy@gmail.com>"]
 
-#[profile.dev]
-#panic = "abort"
-
-#[profile.release]
-#panic = "abort"
-
 [dependencies]
+# bootloader - create executable binary files
+# order:
+# enter 16 bit real mode
+# enter 32 bit protected mode
+# enter 64 bit long mode ()
 bootloader = "0.9.8"
+# volatile storage
+# helps with async
 volatile = "0.2.6"
+# spinlocking, makes sure multithreading works fine
 spin = "0.5.2"
+# x86_64 generic architecture
 x86_64 = "0.13.2"
 
 [dependencies.lazy_static]
+# lazy static initialization
+# certain things can't be init at compile time, so they're inited at runtime
 version = "1.0"
+# we don't use the standard library, we have a standalone binary
 features = ["spin_no_std"]

@@ -10,6 +10,7 @@ const VGA_SIZE_H: usize = 25;
 /// Vertical size of the VGA buffer (COLS)
 const VGA_SIZE_W: usize = 80;
 
+/// VGA memory address - VGA is a statically mapped memory buffer.
 const VGA_MEM: usize = 0xb8000;
 
 /// A single color code, comprised of... well, a color.
@@ -131,6 +132,9 @@ impl Writer {
         color: ColorCode::BLANK,
     };
 
+    /// Write a single byte to the buffer. This uses the "col_pos" of the Writer instance you're
+    /// using. Use the buffer's set method to actually by position. If the byte that's written
+    /// is a newline (b'\n'), call the new_line method.
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'\n' => self.new_line(),
@@ -155,6 +159,9 @@ impl Writer {
         }
     }
 
+    /// Write a string to the terminal. Calls the write_byte method repeatedly. If the string is
+    /// longer than the amount of available space, automatically insert a newline in the middle
+    /// of the screen.
     pub fn write_string(&mut self, string: &str) {
         for byte in string.bytes() {
             match byte {
@@ -164,6 +171,8 @@ impl Writer {
         }
     }
 
+    /// Shift the buffer's contents upwards by a given distance.
+    /// CLIPPING ENABLED: some characters will get clipped.
     pub fn shift_up(&mut self, distance: usize) {
         for row in 1..VGA_SIZE_H {
             for col in 0..VGA_SIZE_W {
@@ -177,6 +186,8 @@ impl Writer {
         }
     }
 
+    /// Shift the buffer's contents downwards by a given distance.
+    /// CLIPPING ENABLED: some characters will get clipped.
     pub fn shift_down(&mut self, distance: usize) {
         for row in 0..VGA_SIZE_H {
             for col in 0..VGA_SIZE_W {
@@ -190,6 +201,8 @@ impl Writer {
         }
     }
 
+    /// Shift the buffer's contents to the right.
+    /// CLIPPING ENABLED: some characters will get clipped.
     pub fn shift_right(&mut self, distance: usize) {
         for col in 0..VGA_SIZE_W {
             for row in 0..VGA_SIZE_H {
@@ -203,6 +216,8 @@ impl Writer {
         }
     }
 
+    /// Shift the buffer's contents to the left.
+    /// CLIPPING ENABLED: some characters will get clipped.
     pub fn shift_left(&mut self, distance: usize) {
         for col in 0..VGA_SIZE_W {
             for row in 0..VGA_SIZE_H {
@@ -216,18 +231,23 @@ impl Writer {
         }
     }
 
+    /// Clear a specified row entirely.
+    /// This sets the contents of the row to the BLANK character.
     pub fn clear_row(&mut self, row: usize) {
         for col in 0..VGA_SIZE_W {
             self.buffer.chars[row][col].write(Writer::BLANK);
         }
     }
 
+    /// Clear an entire column.
+    /// This sets the contents of the row to the BLANK character.
     pub fn clear_col(&mut self, col: usize) {
         for row in 0..VGA_SIZE_H {
             self.buffer.chars[row][col].write(Writer::BLANK);
         }
     }
 
+    /// Shift the terminal's contents upwards by 1 and reset the column position to 0.
     pub fn new_line(&mut self) {
         self.shift_up(1);
         self.col_pos = 0;
@@ -265,14 +285,12 @@ macro_rules! print {
     ($($arg:tt)*) => ($crate::vga::_print(format_args!($($arg)*)));
 }
 
-/// Like the `println!` macro in the standard library, but prints to the VGA text buffer.
 #[macro_export]
 macro_rules! println {
     () => ($crate::vga::print!("\n"));
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
-/// Prints the given formatted string to the VGA text buffer through the global `WRITER` instance.
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;

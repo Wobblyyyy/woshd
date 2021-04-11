@@ -6,15 +6,15 @@ use woshd::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("What the fuck is up, gamers?");
-    println!("This is a really long run-on sentence designed to test what happens when newlines are used mid-sentence. Hmm. I wonder.");
-    woshd::init(); // new
+    println!("What's up, gamers?");
+
+    woshd::init();
 
     // invoke a breakpoint exception
     // x86_64::instructions::interrupts::int3(); // new
 
     // unsafe {
-    //     *(0xdeadbeef as *mut u64) = 42;
+    //     *(0xjfaljfjw as *mut u64) = 42;
     // };
 
     // fn stack_overflow() {
@@ -26,9 +26,12 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
+/// Panic handler - any kernel panics are routed to here.
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
+    // Print the panic's contents to the VGA terminal.
     println!("{}", _info);
 
+    // Loop forever - post-panic, we don't attempt recovery.
     loop {}
 }
